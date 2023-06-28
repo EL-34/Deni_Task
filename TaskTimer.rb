@@ -1,4 +1,5 @@
 require 'time'
+require 'date'
 
 class TaskTimer
 
@@ -10,7 +11,7 @@ class TaskTimer
     if[task_name, task_start, task_end].any?(&:nil?)
       puts "Please fill in all task parameters"
     end
-	    @task_name, @task_start, @task_end = task_name, task_start, task_end
+	  @task_name, @task_start, @task_end = task_name, task_start, task_end
   end
 
   # Class methods start here:
@@ -54,9 +55,26 @@ class TaskTimer
       puts schedules_list
     end
 
+    def split_overnight_tasks(task_timers)
+        task_timers.compact.map { |task|
+        task_days = (Date.parse(task.task_end) - Date.parse(task.task_start)).to_i
+        if task_days > 0
+          task_index = task_timers.find_index(task)
+            for i in 1..task_days - 1
+              task_timers.insert(task_index + 1, TaskTimer.new(task.task_name, "#{(Date.parse(task.task_start) + (task_days - 1)).strftime("%Y-%m-%d")} 00:00", "#{(Date.parse(task.task_start) + (task_days - 1)).strftime("%Y-%m-%d")} 23:59"))
+              task_index = task_index + 1
+            end
+          task_timers.insert(task_index + task_days, TaskTimer.new(task.task_name, "#{(Date.parse(task.task_start) + task_days).strftime("%Y-%m-%d")} 00:00", task.task_end) )
+          task_index = task_index + 1
+          task.task_end = "#{Date.parse(task.task_start).strftime("%Y-%m-%d")} 23:59"
+        end
+      }
+      task_timers
+    end
+
     def list_schedule(task_timers)
       tasks_sorted_by_start_desc = Array.new(
-        task_timers.sort_by { |timer| timer.string_to_date_time(timer.task_start) }.reverse
+        split_overnight_tasks(task_timers).compact.sort_by { |timer| timer.string_to_date_time(timer.task_start) }.reverse
       )
       put_tasks_list(tasks_sorted_by_start_desc)
     end
@@ -97,10 +115,6 @@ class TaskTimer
       return task_duration = ( (string_to_date_time(@task_end) - string_to_date_time(@task_start) ) / 60 )
         .to_i
         #.to_s.delete_suffix(".0")
-
-      else
-        return nil
-
       end
     end
 
@@ -108,45 +122,53 @@ class TaskTimer
   def add_time(minutes)
     task_end_in_date_time = string_to_date_time(@task_end)
     new_task_end_string = (task_end_in_date_time + minutes * 60).to_s.delete_suffix(':00 +0300')
-    @task_end = new_task_end_string;
+    @task_end = new_task_end_string
   end
 
 end
 
 #class instantiations
 #ob = TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36")
-ob1 = TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39")
+#ob1 = TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39")
 
 TaskTimer.list_schedule([
   TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
-  TaskTimer.new("Prepare breakfast", "2023-06-05 12:36", "2023-06-05 12:36"),
-  TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
-  TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2024-06-05 12:39")
+  TaskTimer.new("Prepare dinner", "2024-06-05 12:35", "2024-06-05 12:39"),
+  TaskTimer.new("Prepare brunch", "2022-06-05 12:35", "2022-06-07 12:39"),
+  TaskTimer.new("Dance", "2020-06-03 12:35", "2020-06-05 12:39"),
+  TaskTimer.new("Training", "2022-06-04 12:30", "2022-06-05 12:32")
   ])
 
-  TaskTimer.max_task([
-    TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2024-06-05 12:39"),
-    TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
+#  TaskTimer.max_task([
+  #  TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2022-06-05 12:39"),
+  #  TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
     #TaskTimer.new("Prepare breakfast", "2023-06-05 12:36", "2023-06-05 12:36"),
-    TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
-    TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2025-06-05 12:39")
-    ])
+  #  TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
+  #  TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2023-06-07 12:39")
+  #  ])
 
-  TaskTimer.min_task([
-    TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2024-06-05 12:39"),
-    TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
+  #TaskTimer.min_task([
+  #  TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2024-06-05 12:39"),
+    #TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
     #TaskTimer.new("Prepare breakfast", "2023-06-05 12:36", "2023-06-05 12:36"),
-    TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
-    TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2025-06-05 12:39")
-    ])
+  #  TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
+  #  TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2023-06-07 12:39")
+    #])
 
-    TaskTimer.avg_task([
-      TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2024-06-05 12:39"),
-      TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
+    #TaskTimer.avg_task([
+      #TaskTimer.new("Prepare lunch", "2022-06-05 12:35", "2024-06-05 12:39"),
+    #  TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
       #TaskTimer.new("Prepare breakfast", "2023-06-05 12:36", "2023-06-05 12:36"),
-      TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
-      TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2025-06-05 12:39")
-      ])
+    #  TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39"),
+    #  TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2023-06-07 12:39")
+    #  ])
+
+      #TaskTimer.split_overnight_tasks([
+      #  TaskTimer.new("sss", "2024-06-05 12:35", "2024-06-05 12:39"),
+      #  TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2023-06-07 12:39"),
+      #  TaskTimer.new("eee", "2022-06-05 12:35", "2022-06-05 12:39")
+      #  ])
+
 
 #ob.add_time(20)
 #puts ob.duration
@@ -154,3 +176,5 @@ TaskTimer.list_schedule([
 #puts ob.valid?
 #puts ob.task_name
 #ob.prnt
+
+# map, reduce, reject, select, detect, collect, compact, flatten
