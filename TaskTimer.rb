@@ -126,7 +126,6 @@ class TaskTimer
 
 end
 
-
 TaskTimer.list_schedule([
   TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
   TaskTimer.new("Prepare dinner", "2024-06-05 12:35", "2024-06-05 12:39"),
