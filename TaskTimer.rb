@@ -25,17 +25,17 @@ class TaskTimer
 
     def filtered_tasks_list(tasks, func)
       filtered_tasks = []
-      tasks.each { |task|
+      tasks.each do |task|
         if task.duration == all_durations_list(tasks).method(func).call
           filtered_tasks.push(task)
         end
-      }
-      return filtered_tasks
+      end
+      filtered_tasks
     end
 
     def put_tasks_list(list)
       schedules_list = Array.new
-      list.each { |task|
+      list.each do |task|
         temp_obj = TaskTimer.new(task.task_name, task.task_start, task.task_end)
         schedules_list.push(
           #start date:
@@ -51,31 +51,30 @@ class TaskTimer
           #duration:
           "#{temp_obj.duration}"
         )
-      }
+      end
       puts schedules_list
     end
 
     def split_overnight_tasks(task_timers)
-        task_timers.compact.map { |task|
+      task_timers.compact.map do |task|
         task_days = (Date.parse(task.task_end) - Date.parse(task.task_start)).to_i
         if task_days > 0
           task_index = task_timers.find_index(task)
-            for i in 1..task_days - 1
-              task_timers.insert(task_index + 1, TaskTimer.new(task.task_name, "#{(Date.parse(task.task_start) + (task_days - 1)).strftime("%Y-%m-%d")} 00:00", "#{(Date.parse(task.task_start) + (task_days - 1)).strftime("%Y-%m-%d")} 23:59"))
-              task_index = task_index + 1
-            end
+          for i in 1..task_days - 1
+            task_timers.insert(task_index + 1, TaskTimer.new(task.task_name, "#{(Date.parse(task.task_start) + (task_days - 1)).strftime("%Y-%m-%d")} 00:00", "#{(Date.parse(task.task_start) + (task_days - 1)).strftime("%Y-%m-%d")} 23:59"))
+            task_index = task_index + 1
+          end
           task_timers.insert(task_index + task_days, TaskTimer.new(task.task_name, "#{(Date.parse(task.task_start) + task_days).strftime("%Y-%m-%d")} 00:00", task.task_end) )
           task_index = task_index + 1
           task.task_end = "#{Date.parse(task.task_start).strftime("%Y-%m-%d")} 23:59"
         end
-      }
+      end
       task_timers
     end
 
     def list_schedule(task_timers)
-      tasks_sorted_by_start_desc = Array.new(
-        split_overnight_tasks(task_timers).compact.sort_by { |timer| timer.string_to_date_time(timer.task_start) }.reverse
-      )
+      tasks_sorted_by_start_desc = split_overnight_tasks(task_timers).compact
+      .sort_by { |timer| timer.string_to_date_time(timer.task_start) }.reverse
       put_tasks_list(tasks_sorted_by_start_desc)
     end
 
