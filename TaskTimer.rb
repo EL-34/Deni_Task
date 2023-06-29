@@ -126,9 +126,6 @@ class TaskTimer
 
 end
 
-#class instantiations
-#ob = TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36")
-#ob1 = TaskTimer.new("Prepare agenda", "2024-06-05 12:35", "2024-06-05 12:39")
 
 TaskTimer.list_schedule([
   TaskTimer.new("Prepare breakfast", "2023-06-05 12:35", "2023-06-05 12:36"),
@@ -167,13 +164,3 @@ TaskTimer.list_schedule([
       #  TaskTimer.new("Prepare lunch", "2023-06-05 12:35", "2023-06-07 12:39"),
       #  TaskTimer.new("eee", "2022-06-05 12:35", "2022-06-05 12:39")
       #  ])
-
-
-#ob.add_time(20)
-#puts ob.duration
-#puts ob1.duration
-#puts ob.valid?
-#puts ob.task_name
-#ob.prnt
-
-# map, reduce, reject, select, detect, collect, compact, flatten
